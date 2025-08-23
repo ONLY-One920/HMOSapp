@@ -1,0 +1,954 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MallBackend API",
+    "version": "1.0.0",
+    "description": "电商平台后端API文档"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "本地开发服务器"
+    }
+  ],
+  "tags": [
+    {"name": "系统信息", "description": "系统状态和元数据"},
+    {"name": "用户认证", "description": "用户注册、登录、登出"},
+    {"name": "商品管理", "description": "商品创建、读取、更新、删除"},
+    {"name": "购物车", "description": "购物车操作"},
+    {"name": "AI服务", "description": "AI聊天和消息管理"}
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "API状态信息",
+        "tags": ["系统信息"],
+        "responses": {
+          "200": {
+            "description": "API状态信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "running"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "MallBackend API is running"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "endpoints": {
+                      "type": "object",
+                      "properties": {
+                        "products": {
+                          "type": "string",
+                          "example": "/api/products"
+                        },
+                        "cart": {
+                          "type": "string",
+                          "example": "/api/cart"
+                        },
+                        "ai_chat": {
+                          "type": "string",
+                          "example": "/api/ai/chat"
+                        },
+                        "ai_messages": {
+                          "type": "string",
+                          "example": "/api/ai/messages"
+                        },
+                        "register": {
+                          "type": "string",
+                          "example": "/api/register"
+                        },
+                        "login": {
+                          "type": "string",
+                          "example": "/api/login"
+                        },
+                        "logout": {
+                          "type": "string",
+                          "example": "/api/logout"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "summary": "用户注册",
+        "tags": ["用户认证"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "new_user"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "注册成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "用户创建成功"
+                    },
+                    "user_id": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "用户名或密码为空，或用户名已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "summary": "用户登录",
+        "tags": ["用户认证"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "admin"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "admin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "用户名或密码错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "summary": "用户登出",
+        "tags": ["用户认证"],
+        "security": [{"Bearer": []}],
+        "responses": {
+          "200": {
+            "description": "登出成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "获取所有商品",
+        "tags": ["商品管理"],
+        "responses": {
+          "200": {
+            "description": "商品列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新商品",
+        "tags": ["商品管理"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "商品创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "商品创建成功"
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "example": "5"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}": {
+      "put": {
+        "summary": "更新商品信息",
+        "tags": ["商品管理"],
+        "security": [{"Bearer": []}],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "商品更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除商品",
+        "tags": ["商品管理"],
+        "security": [{"Bearer": []}],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "商品已删除",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "summary": "获取用户购物车",
+        "tags": ["购物车"],
+        "security": [{"Bearer": []}],
+        "responses": {
+          "200": {
+            "description": "购物车商品列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CartItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "添加商品到购物车",
+        "tags": ["购物车"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "string",
+                    "example": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "已添加到购物车",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少商品ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新购物车商品数量",
+        "tags": ["购物车"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item_id": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "购物车已更新",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少参数",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "购物车项不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "从购物车删除商品",
+        "tags": ["购物车"],
+        "security": [{"Bearer": []}],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已从购物车移除",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少商品ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "购物车项不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/chat": {
+      "post": {
+        "summary": "AI聊天代理",
+        "tags": ["AI服务"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "example": "doubao-seed-1-6-250615",
+                    "description": "使用的AI模型，可选"
+                  },
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "example": "user"
+                        },
+                        "content": {
+                          "oneOf": [
+                            {"type": "string"},
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {"type": "string"},
+                                  "text": {"type": "string"},
+                                  "image_url": {
+                                    "type": "object",
+                                    "properties": {
+                                      "url": {"type": "string"}
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI回复",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string"},
+                    "object": {"type": "string"},
+                    "created": {"type": "integer"},
+                    "model": {"type": "string"},
+                    "choices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {"type": "integer"},
+                          "message": {
+                            "type": "object",
+                            "properties": {
+                              "role": {"type": "string"},
+                              "content": {"type": "string"}
+                            }
+                          },
+                          "finish_reason": {"type": "string"}
+                        }
+                      }
+                    },
+                    "usage": {
+                      "type": "object",
+                      "properties": {
+                        "prompt_tokens": {"type": "integer"},
+                        "completion_tokens": {"type": "integer"},
+                        "total_tokens": {"type": "integer"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/messages": {
+      "get": {
+        "summary": "获取用户AI聊天记录",
+        "tags": ["AI服务"],
+        "security": [{"Bearer": []}],
+        "responses": {
+          "200": {
+            "description": "聊天记录列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AIMessage"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "保存用户消息",
+        "tags": ["AI服务"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "example": "user"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "你好"
+                  },
+                  "timestamp": {
+                    "type": "integer",
+                    "example": 1677652288000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "消息已保存",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "缺少必要参数",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/messages/{message_id}": {
+  "delete": {
+    "summary": "删除指定的AI消息",
+    "tags": ["AI服务"],
+    "security": [{"Bearer": []}],
+    "parameters": [
+      {
+        "name": "message_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "消息删除成功",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SuccessResponse"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "无权删除消息",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "消息不存在",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "服务器内部错误",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+  },
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1"
+          },
+          "name": {
+            "type": "string",
+            "example": "华为手机"
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "example": 1999.0
+          },
+          "image": {
+            "type": "string",
+            "example": "hw.png"
+          },
+          "description": {
+            "type": "string",
+            "example": "高性能旗舰手机"
+          }
+        }
+      },
+      "ProductCreate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "5"
+          },
+          "name": {
+            "type": "string",
+            "example": "新商品"
+          },
+          "price": {
+            "type": "number",
+            "example": 99.99
+          },
+          "image": {
+            "type": "string",
+            "example": "new.jpg"
+          },
+          "description": {
+            "type": "string",
+            "example": "商品描述"
+          }
+        }
+      },
+      "ProductUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "新名称"
+          },
+          "price": {
+            "type": "number",
+            "example": 129.99
+          },
+          "image": {
+            "type": "string",
+            "example": "updated.jpg"
+          },
+          "description": {
+            "type": "string",
+            "example": "更新描述"
+          }
+        }
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 2
+          }
+        }
+      },
+      "AIMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "user"
+          },
+          "content": {
+            "type": "string",
+            "example": "你好，推荐一款手机"
+          },
+          "timestamp": {
+            "type": "integer",
+            "example": 1677652288000
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "example": "admin"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NilsInR5cCI6IkpXVCJ9..."
+          },
+          "user_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "example": "admin"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "错误描述"
+          },
+          "message": {
+            "type": "string",
+            "example": "详细错误信息"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "操作成功"
+          }
+        }
+      }
+    }
+  }
+}
