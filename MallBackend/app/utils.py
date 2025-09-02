@@ -155,6 +155,8 @@ def seed_initial_data():
 def cleanup_expired_tokens():
     """定期清理过期令牌"""
     try:
+        # 确保有当前应用上下文
+        from flask import current_app
         db = current_app.extensions['sqlalchemy']
         from .models import TokenBlacklist
 
@@ -169,6 +171,7 @@ def cleanup_expired_tokens():
         db.session.commit()
         logger.info(f"清理了 {len(expired_tokens)} 个过期令牌")
         print(f"清理了 {len(expired_tokens)} 个过期令牌")
+
     except Exception as e:
         logger.error(f"清理令牌错误: {str(e)}")
         if 'db' in locals() and hasattr(db, 'session'):

@@ -108,8 +108,7 @@ def create_app():
         """检查令牌是否在黑名单中"""
         jti = jwt_payload["jti"]
         # 使用应用上下文中的db对象
-        db = current_app.extensions['sqlalchemy']
-        token = db.session.query(TokenBlacklist).filter_by(jti=jti).first()
+        token = TokenBlacklist.query.filter_by(jti=jti).first()
         return token is not None
 
     # 添加自定义错误处理器

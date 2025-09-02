@@ -21,9 +21,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+# 修改定时任务，确保在应用上下文中运行
+def cleanup_job():
+    """在应用上下文中运行清理任务的包装函数"""
+    with app.app_context():
+        cleanup_expired_tokens()
+
+
 # 配置定时任务清理过期令牌
 scheduler = BackgroundScheduler()
-scheduler.add_job(cleanup_expired_tokens, 'interval', hours=1)
+scheduler.add_job(cleanup_job, 'interval', hours=1)
 scheduler.start()
 
 if __name__ == '__main__':
@@ -41,6 +49,7 @@ if __name__ == '__main__':
             # 3. 初始化数据
             logger.info("正在初始化数据...")
             seed_initial_data()
+
         except Exception as e:
             logger.error(f"数据库初始化失败: {str(e)}")
             try:
@@ -72,18 +81,16 @@ if __name__ == '__main__':
     # 添加详细的路由调试信息
     print("Registered API Endpoints:")
     print("=" * 50)
-
     # 获取所有端点
     for rule in app.url_map.iter_rules():
         if rule.endpoint not in ('static', 'swagger_ui'):
             methods = ','.join(rule.methods)
             print(f'{methods:<10} {rule}')
-
     print("\n" + "=" * 50)
+
     print("Starting MallBackend server...")
     print("=" * 50)
 
     # 启用详细日志
     app.logger.setLevel(logging.DEBUG)
-
     app.run(host='0.0.0.0', port=5000, debug=True)
