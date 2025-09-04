@@ -46,7 +46,7 @@ def create_app():
 
     # JWT配置
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt_fallback_secret')
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 设置1小时有效期
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 604800  # 设置7天有效期
     app.config['JWT_HEADER_TYPE'] = 'Bearer'
     app.config['JWT_HEADER_NAME'] = 'Authorization'  # 明确指定头部名称
     app.config['JWT_TOKEN_LOCATION'] = ['headers']  # 明确指定从头部获取token
