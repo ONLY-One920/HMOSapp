@@ -19,6 +19,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +47,7 @@ if __name__ == '__main__':
             logger.info("正在检查数据库连接...")
             db.session.execute(text("SELECT 1 FROM token_blacklist LIMIT 1"))
 
-            # 3. 初始化数据
+            # 3. 初始化数据（包括商品数据）
             logger.info("正在初始化数据...")
             seed_initial_data()
 
@@ -64,6 +65,7 @@ if __name__ == '__main__':
                 # 再次初始化数据
                 logger.info("再次初始化数据...")
                 seed_initial_data()
+
                 logger.info("数据库表创建完成")
             except Exception as create_err:
                 logger.error(f"创建数据库表失败: {str(create_err)}")
@@ -81,13 +83,14 @@ if __name__ == '__main__':
     # 添加详细的路由调试信息
     print("Registered API Endpoints:")
     print("=" * 50)
+
     # 获取所有端点
     for rule in app.url_map.iter_rules():
         if rule.endpoint not in ('static', 'swagger_ui'):
             methods = ','.join(rule.methods)
             print(f'{methods:<10} {rule}')
-    print("\n" + "=" * 50)
 
+    print("\n" + "=" * 50)
     print("Starting MallBackend server...")
     print("=" * 50)
 

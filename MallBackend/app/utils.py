@@ -4,16 +4,18 @@ from datetime import datetime
 from sqlalchemy import inspect, text
 from flask import current_app
 from werkzeug.security import generate_password_hash
-import json  # 新增导入
 
 logger = logging.getLogger(__name__)
 
 
 def validate_credentials(username, password):
+    """验证用户名和密码格式"""
     if not re.match(r'^\d{6}$', username):
         return False, '用户名必须是6位数字'
+
     if len(password) == 0 or len(password) > 20:
         return False, '密码长度需在1-20个字符之间'
+
     return True, ""
 
 
@@ -22,15 +24,18 @@ def check_database_schema():
     try:
         db = current_app.extensions['sqlalchemy']
         inspector = inspect(db.engine)
+
         required_columns = {
             'cart_items': ['updated_at'],
             'products': ['images']  # 新增：检查products表的images字段
         }
 
         fixed_count = 0
+
         for table, columns in required_columns.items():
             if table in inspector.get_table_names():
                 existing_columns = [col['name'] for col in inspector.get_columns(table)]
+
                 for col in columns:
                     if col not in existing_columns:
                         logger.info(f"添加缺失字段 {col} 到表 {table}")
@@ -65,7 +70,9 @@ def check_database_schema():
             db.session.commit()
             logger.info(f"修复了 {fixed_count} 个数据库字段问题")
             return True
+
         return False
+
     except Exception as e:
         logger.error(f"数据库结构检查失败: {str(e)}")
         if 'db' in locals() and hasattr(db, 'session'):
@@ -73,68 +80,92 @@ def check_database_schema():
         return False
 
 
+def init_default_products():
+    """初始化默认商品数据"""
+    try:
+        from .models import Product
+
+        # 默认商品数据
+        default_products = [
+            {
+                'id': '1',
+                'name': '华为手机',
+                'price': 1999.0,
+                'image': 'hw.png',
+                'description': '高性能旗舰手机，搭载麒麟芯片，6.5英寸全面屏，5000mAh大电池'
+            },
+            {
+                'id': '2',
+                'name': '小米手机',
+                'price': 4399.0,
+                'image': 'xm.png',
+                'description': '性价比之王，骁龙处理器，1亿像素相机，120Hz刷新率'
+            },
+            {
+                'id': '3',
+                'name': '苹果手机',
+                'price': 5999.0,
+                'image': 'pg.png',
+                'description': 'iOS生态系统，A系列芯片，Face ID面部识别，超视网膜显示屏'
+            },
+            {
+                'id': '4',
+                'name': '花朵卡片',
+                'price': 9.9,
+                'image': 'flower.png',
+                'description': '六一电子贺卡，精美花朵设计，可自定义祝福语'
+            },
+            {
+                'id': '5',
+                'name': '无线耳机',
+                'price': 299.0,
+                'image': 'earphone.png',
+                'description': '真无线蓝牙耳机，降噪功能，长续航时间'
+            },
+            {
+                'id': '6',
+                'name': '智能手表',
+                'price': 899.0,
+                'image': 'watch.png',
+                'description': '健康监测，运动追踪，来电提醒，防水设计'
+            }
+        ]
+
+        db = current_app.extensions['sqlalchemy']
+
+        for product_data in default_products:
+            # 检查商品是否已存在
+            existing_product = Product.query.get(product_data['id'])
+            if not existing_product:
+                new_product = Product(
+                    id=product_data['id'],
+                    name=product_data['name'],
+                    price=product_data['price'],
+                    image=product_data['image'],
+                    description=product_data['description']
+                )
+                db.session.add(new_product)
+
+        db.session.commit()
+        logger.info("初始化默认商品数据完成")
+
+    except Exception as e:
+        logger.error(f"初始化商品数据失败: {str(e)}")
+        if 'db' in locals() and hasattr(db, 'session'):
+            db.session.rollback()
+
+
 def seed_initial_data():
     """初始化数据库数据"""
     # 先检查并修复数据库结构
     check_database_schema()
+
     try:
         db = current_app.extensions['sqlalchemy']
-        from .models import Product, User
+        from .models import User
 
-        # 添加示例商品（带多张图片）
-        if not Product.query.first():
-            products = [
-                Product(
-                    id='1',
-                    name='华为手机',
-                    price=1999.0,
-                    image='hw.png',
-                    images=json.dumps([
-                        'hw.png',
-                        'hw_detail1.png',
-                        'hw_detail2.png'
-                    ]),
-                    description='高性能旗舰手机'
-                ),
-                Product(
-                    id='2',
-                    name='小米手机',
-                    price=4399.0,
-                    image='xm.png',
-                    images=json.dumps([
-                        'xm.png',
-                        'xm_detail1.png',
-                        'xm_detail2.png'
-                    ]),
-                    description='性价比之王'
-                ),
-                Product(
-                    id='3',
-                    name='苹果手机',
-                    price=5999.0,
-                    image='pg.png',
-                    images=json.dumps([
-                        'pg.png',
-                        'pg_detail1.png',
-                        'pg_detail2.png'
-                    ]),
-                    description='iOS生态系统'
-                ),
-                Product(
-                    id='4',
-                    name='花朵卡片',
-                    price=9.9,
-                    image='flower.png',
-                    images=json.dumps([
-                        'flower.png',
-                        'flower_detail1.png'
-                    ]),
-                    description='六一电子贺卡'
-                ),
-            ]
-            db.session.bulk_save_objects(products)
-            db.session.commit()
-            print("添加了初始商品数据")
+        # 初始化默认商品
+        init_default_products()
 
         # 添加测试用户
         if not User.query.first():
@@ -145,6 +176,7 @@ def seed_initial_data():
             db.session.add(test_user)
             db.session.commit()
             print("创建了测试用户: 123456/password123")
+
     except Exception as e:
         logger.error(f"初始化数据时出错: {str(e)}")
         if 'db' in locals() and hasattr(db, 'session'):

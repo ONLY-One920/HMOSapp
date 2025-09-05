@@ -114,6 +114,31 @@ def delete_product(current_user, product_id):
     return jsonify({'status': 'success', 'message': '商品已删除'}), 200
 
 
+@main_api.route('/api/products/search', methods=['GET'])
+def search_products():
+    """搜索商品"""
+    keyword = request.args.get('q', '')
+
+    if not keyword:
+        return jsonify({'status': 'error', 'error': '缺少搜索关键词'}), 400
+
+    # 构建查询条件
+    from sqlalchemy import or_
+    products = Product.query.filter(
+        or_(
+            Product.name.ilike(f'%{keyword}%'),
+            Product.description.ilike(f'%{keyword}%')
+        )
+    ).all()
+
+    return jsonify([{
+        'id': p.id,
+        'name': p.name,
+        'price': p.price,
+        'image': p.image,
+        'description': p.description
+    } for p in products])
+
 @main_api.route('/api/products/<product_id>/detail', methods=['GET'])
 def get_product_detail(product_id):
     """获取商品详情(包含多张图片)"""
