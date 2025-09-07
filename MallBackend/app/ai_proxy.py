@@ -68,7 +68,6 @@ def format_products_for_ai(products):
     for i, product in enumerate(products, 1):
         product_text += f"{i}. {product.name} - 价格: ¥{product.price}\n"
         product_text += f"   描述: {product.description[:100]}...\n"
-        product_text += f"   商品ID: {product.id}\n\n"
 
     return product_text
 
