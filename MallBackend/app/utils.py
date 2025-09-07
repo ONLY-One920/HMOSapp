@@ -116,14 +116,14 @@ def init_default_products():
                 'description': '六一电子贺卡，精美花朵设计，可自定义祝福语'
             },
             {
-                'id': '5',
+                'id': '6',
                 'name': '无线耳机',
                 'price': 299.0,
                 'image': 'earphone.png',
                 'description': '真无线蓝牙耳机，降噪功能，长续航时间'
             },
             {
-                'id': '6',
+                'id': '7',
                 'name': '智能手表',
                 'price': 899.0,
                 'image': 'watch.png',
