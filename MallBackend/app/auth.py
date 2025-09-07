@@ -5,7 +5,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from . import db
-from .models import User, TokenBlacklist
+from .models import User, TokenBlacklist, CartItem, AIMessage
 
 auth_api = Blueprint('auth_api', __name__)
 
@@ -135,3 +135,76 @@ def verify_token(current_user):
         'user_id': current_user.id,
         'username': current_user.username
     }), 200
+
+@auth_api.route('/api/change_password', methods=['POST'])
+@token_required
+def change_password(current_user):
+    """修改用户密码"""
+    data = request.json
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+    if not old_password or not new_password:
+        return jsonify({'status': 'error', 'error': '原密码和新密码不能为空'}), 400
+
+    # 验证原密码
+    if not check_password_hash(current_user.password, old_password):
+        return jsonify({'status': 'error', 'error': '原密码错误'}), 400
+
+    # 验证新密码长度
+    if len(new_password) == 0 or len(new_password) > 20:
+        return jsonify({'status': 'error', 'error': '新密码长度需在1-20个字符之间'}), 400
+
+    # 更新密码
+    current_user.password = generate_password_hash(new_password)
+    db.session.commit()
+
+    # 将当前token加入黑名单，强制重新登录
+    jti = get_jwt()['jti']
+    exp_timestamp = get_jwt()['exp']
+    expires_at = datetime.utcfromtimestamp(exp_timestamp)
+
+    blacklisted_token = TokenBlacklist(
+        jti=jti,
+        expires_at=expires_at
+    )
+    db.session.add(blacklisted_token)
+    db.session.commit()
+
+    return jsonify({'status': 'success', 'message': '密码修改成功，请重新登录'}), 200
+
+
+@auth_api.route('/api/account', methods=['DELETE'])
+@token_required
+def delete_account(current_user):
+    """删除用户账户"""
+    data = request.json
+    password = data.get('password')
+
+    if not password:
+        return jsonify({'status': 'error', 'error': '需要密码确认'}), 400
+
+    # 验证密码
+    if not check_password_hash(current_user.password, password):
+        return jsonify({'status': 'error', 'error': '密码错误'}), 400
+
+    # 将当前token加入黑名单
+    jti = get_jwt()['jti']
+    exp_timestamp = get_jwt()['exp']
+    expires_at = datetime.utcfromtimestamp(exp_timestamp)
+
+    blacklisted_token = TokenBlacklist(
+        jti=jti,
+        expires_at=expires_at
+    )
+    db.session.add(blacklisted_token)
+
+    # 删除用户的所有相关数据
+    CartItem.query.filter_by(user_id=current_user.id).delete()
+    AIMessage.query.filter_by(user_id=current_user.id).delete()
+
+    # 删除用户
+    db.session.delete(current_user)
+    db.session.commit()
+
+    return jsonify({'status': 'success', 'message': '账户已成功删除'}), 200

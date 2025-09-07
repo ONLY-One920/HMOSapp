@@ -1,7 +1,5 @@
 from . import db
-from datetime import datetime
 from sqlalchemy import func
-
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -11,7 +9,6 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
-
 
 class Product(db.Model):
     __tablename__ = 'products'
@@ -24,7 +21,6 @@ class Product(db.Model):
 
     def __repr__(self):
         return f'<Product {self.name}>'
-
 
 class CartItem(db.Model):
     __tablename__ = 'cart_items'
