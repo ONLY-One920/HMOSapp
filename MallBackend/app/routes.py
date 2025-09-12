@@ -4,6 +4,7 @@ from . import db
 from .models import Product, CartItem, AIMessage
 from .auth import token_required
 import json
+import random
 
 main_api = Blueprint('main_api', __name__)
 
@@ -32,17 +33,51 @@ def home():
     })
 
 
+# 添加全局变量存储上一次的商品组合
+last_product_combination = []
+
+
 @main_api.route('/api/products', methods=['GET'])
 def get_products():
-    products = Product.query.all()
+    # 获取所有商品
+    all_products = Product.query.all()
+
+    # 如果商品数量不足5个，直接返回所有商品
+    if len(all_products) <= 5:
+        return jsonify([{
+            'id': p.id,
+            'name': p.name,
+            'price': p.price,
+            'image': p.image,
+            'description': p.description
+        } for p in all_products])
+
+    # 随机选择5个商品，确保与上一次不同
+    global last_product_combination
+    # 尝试最多10次找到不同的组合
+    for _ in range(10):
+        selected_products = random.sample(all_products, 5)
+        selected_ids = sorted([p.id for p in selected_products])
+
+        # 检查是否与上一次相同
+        if selected_ids != last_product_combination:
+            last_product_combination = selected_ids
+            return jsonify([{
+                'id': p.id,
+                'name': p.name,
+                'price': p.price,
+                'image': p.image,
+                'description': p.description
+            } for p in selected_products])
+    # 如果10次尝试后仍然相同，仍然返回随机选择的结果
+    selected_products = random.sample(all_products, 5)
     return jsonify([{
         'id': p.id,
         'name': p.name,
         'price': p.price,
         'image': p.image,
         'description': p.description
-    } for p in products])
-
+    } for p in selected_products])
 
 @main_api.route('/api/products', methods=['POST'])
 @token_required
