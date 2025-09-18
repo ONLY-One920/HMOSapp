@@ -148,12 +148,10 @@ def delete_product(current_user, product_id):
     db.session.commit()
     return jsonify({'status': 'success', 'message': '商品已删除'}), 200
 
-
 @main_api.route('/api/products/search', methods=['GET'])
 def search_products():
     """搜索商品"""
     keyword = request.args.get('q', '')
-
     if not keyword:
         return jsonify({'status': 'error', 'error': '缺少搜索关键词'}), 400
 

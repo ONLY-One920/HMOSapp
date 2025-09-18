@@ -22,6 +22,7 @@ class Product(db.Model):
     def __repr__(self):
         return f'<Product {self.name}>'
 
+
 class CartItem(db.Model):
     __tablename__ = 'cart_items'
     id = db.Column(db.Integer, primary_key=True)
