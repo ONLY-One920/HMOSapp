@@ -111,7 +111,7 @@ jobs:
     - name: Run security scan
       run: |
         safety check -r requirements.txt --full-report
-        safety check -r test_requirements.txt --full-report
+        safety check -r test-requirements.txt --full-report
     
     - name: Run bandit for code security
       run: |
