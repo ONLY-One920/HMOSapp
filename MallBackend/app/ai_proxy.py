@@ -9,7 +9,7 @@ from collections import Counter
 from typing import List, Set, Dict
 import re
 
-ai_api = Blueprint('ai_api', __name__)
+ai_api = Blueprint("ai_api", __name__)
 
 # 全局变量，用于缓存商品关键词
 product_keywords_map: Dict[str, Set[str]] = {}  # 商品ID -> 关键词集合
@@ -20,18 +20,81 @@ product_categories: Set[str] = set()  # 商品类别关键词
 jieba.initialize()
 
 # 停用词表
-STOP_WORDS = {'什么', '怎么', '如何', '请问', '可以', '想要', '推荐', '你好', '谢谢', '请问', '这个', '那个',
-              '哪些', '有什么', '一下', '一下', '一点', '一些', '一种', '一款', '哪个', '哪款', '多少钱'}
+STOP_WORDS = {
+    "什么",
+    "怎么",
+    "如何",
+    "请问",
+    "可以",
+    "想要",
+    "推荐",
+    "你好",
+    "谢谢",
+    "请问",
+    "这个",
+    "那个",
+    "哪些",
+    "有什么",
+    "一下",
+    "一下",
+    "一点",
+    "一些",
+    "一种",
+    "一款",
+    "哪个",
+    "哪款",
+    "多少钱",
+}
 
 # 商品类别关键词
-PRODUCT_CATEGORIES = {'手机', '华为', '小米', '苹果', '花朵', '卡片', '耳机', '手表', '智能', '无线', '蓝牙',
-                      '降噪', '健康', '运动', '防水', '电子', '数码', '配件', '礼品', '贺卡'}
+PRODUCT_CATEGORIES = {
+    "手机",
+    "华为",
+    "小米",
+    "苹果",
+    "花朵",
+    "卡片",
+    "耳机",
+    "手表",
+    "智能",
+    "无线",
+    "蓝牙",
+    "降噪",
+    "健康",
+    "运动",
+    "防水",
+    "电子",
+    "数码",
+    "配件",
+    "礼品",
+    "贺卡",
+}
 
 # 商城特定关键词
-MALL_SPECIFIC_KEYWORDS = {'商城中', '商城里有', '你们有', '店铺里', '你们卖', '有没有', '能买到', '你们提供', '你们店',
-                          '商城'}
+MALL_SPECIFIC_KEYWORDS = {
+    "商城中",
+    "商城里有",
+    "你们有",
+    "店铺里",
+    "你们卖",
+    "有没有",
+    "能买到",
+    "你们提供",
+    "你们店",
+    "商城",
+}
 
-GENERAL_PRODUCT_KEYWORDS = {'网络上', '一般', '市面上', '常见', '推荐一款', '哪种好', '哪个品牌好', '大家推荐', '流行'}
+GENERAL_PRODUCT_KEYWORDS = {
+    "网络上",
+    "一般",
+    "市面上",
+    "常见",
+    "推荐一款",
+    "哪种好",
+    "哪个品牌好",
+    "大家推荐",
+    "流行",
+}
 
 # 添加商品类别词汇到jieba
 for word in PRODUCT_CATEGORIES:
@@ -57,26 +120,36 @@ def load_all_product_keywords():
 
             # 从商品名称中提取关键词
             name_keywords = jieba.lcut(product.name)
-            keywords.update([kw for kw in name_keywords if len(kw) >= 2 and kw not in STOP_WORDS])
+            keywords.update(
+                [kw for kw in name_keywords if len(kw) >= 2 and kw not in STOP_WORDS]
+            )
 
             # 从商品描述中提取关键词
             if product.description:
                 desc_keywords = jieba.lcut(product.description)
-                keywords.update([kw for kw in desc_keywords if len(kw) >= 2 and kw not in STOP_WORDS])
+                keywords.update(
+                    [
+                        kw
+                        for kw in desc_keywords
+                        if len(kw) >= 2 and kw not in STOP_WORDS
+                    ]
+                )
 
             # 添加商品类别关键词
             for category in product_categories:
-                if category in product.name or (product.description and category in product.description):
+                if category in product.name or (
+                    product.description and category in product.description
+                ):
                     keywords.add(category)
 
             # 添加价格相关关键词
             if product.price:
                 if product.price < 100:
-                    keywords.add('低价')
-                    keywords.add('实惠')
+                    keywords.add("低价")
+                    keywords.add("实惠")
                 elif product.price > 1000:
-                    keywords.add('高端')
-                    keywords.add('旗舰')
+                    keywords.add("高端")
+                    keywords.add("旗舰")
 
             product_keywords_map[product.id] = keywords
             all_product_keywords.update(keywords)
@@ -118,8 +191,8 @@ def search_products_by_keywords(keywords):
         conditions = []
         for keyword in keywords:
             # 对每个关键词，搜索名称和描述
-            conditions.append(Product.name.ilike(f'%{keyword}%'))
-            conditions.append(Product.description.ilike(f'%{keyword}%'))
+            conditions.append(Product.name.ilike(f"%{keyword}%"))
+            conditions.append(Product.description.ilike(f"%{keyword}%"))
 
         # 执行查询
         products = Product.query.filter(or_(*conditions)).all()
@@ -184,7 +257,18 @@ def is_product_related_query(message):
         return True
 
     # 检查是否包含购物相关词汇
-    shopping_keywords = {'买', '购买', '价格', '多少钱', '推荐', '哪个好', '性价比', '优惠', '折扣', '购物'}
+    shopping_keywords = {
+        "买",
+        "购买",
+        "价格",
+        "多少钱",
+        "推荐",
+        "哪个好",
+        "性价比",
+        "优惠",
+        "折扣",
+        "购物",
+    }
     if any(keyword in message_lower for keyword in shopping_keywords):
         return True
 
@@ -211,7 +295,14 @@ def is_asking_about_general_products(message):
 
 def is_asking_all_products(message):
     """判断用户是否在询问所有商品"""
-    all_keywords = {'所有商品', '全部商品', '都有什么商品', '有哪些商品', '商品列表', '所有东西'}
+    all_keywords = {
+        "所有商品",
+        "全部商品",
+        "都有什么商品",
+        "有哪些商品",
+        "商品列表",
+        "所有东西",
+    }
     message_lower = message.lower()
     return any(keyword in message_lower for keyword in all_keywords)
 
@@ -242,7 +333,7 @@ def build_general_product_prompt():
         "- 你不是在推荐商城特定商品\n"
         "- 你可以提供一般性的购物建议、品牌推荐、功能比较等\n"
         "- 请明确说明你的推荐是基于一般市场情况，并非商城特有\n"
-        "- 如果用户想了解商城是否有某商品，可以提示ta：\"您是想了解我们商城中是否有这类商品吗？\"\n"
+        '- 如果用户想了解商城是否有某商品，可以提示ta："您是想了解我们商城中是否有这类商品吗？"\n'
     )
 
 
@@ -279,7 +370,7 @@ def build_all_products_prompt(products):
     )
 
 
-@ai_api.route('/chat', methods=['POST'])
+@ai_api.route("/chat", methods=["POST"])
 @token_required
 def ai_chat_proxy(current_user):
     # 确保商品关键词已加载
@@ -287,33 +378,35 @@ def ai_chat_proxy(current_user):
         load_all_product_keywords()
 
     # 使用应用上下文中的 db 对象
-    db = current_app.extensions['sqlalchemy']
+    db = current_app.extensions["sqlalchemy"]
 
     # 配置火山方舟客户端
     client = OpenAI(
-        base_url=current_app.config['ARK_BASE_URL'],
-        api_key=current_app.config['ARK_API_KEY']
+        base_url=current_app.config["ARK_BASE_URL"],
+        api_key=current_app.config["ARK_API_KEY"],
     )
 
     # 获取请求数据
     payload = request.json
-    model = payload.get('model', current_app.config['ARK_DEFAULT_MODEL'])
+    model = payload.get("model", current_app.config["ARK_DEFAULT_MODEL"])
 
     # 提取并保存用户消息
-    user_messages = [msg for msg in payload['messages'] if msg['role'] == 'user']
+    user_messages = [msg for msg in payload["messages"] if msg["role"] == "user"]
     if user_messages:
         last_user_message = user_messages[-1]
 
         # 处理多模态消息内容
-        content = last_user_message.get('content')
+        content = last_user_message.get("content")
         if isinstance(content, list):
             # 将多模态内容转换为可存储的 JSON 字符串
             content_data = []
             for item in content:
-                if item['type'] == 'text':
-                    content_data.append({'type': 'text', 'value': item['text']})
-                elif item['type'] == 'image_url':
-                    content_data.append({'type': 'image_url', 'value': item['image_url']['url']})
+                if item["type"] == "text":
+                    content_data.append({"type": "text", "value": item["text"]})
+                elif item["type"] == "image_url":
+                    content_data.append(
+                        {"type": "image_url", "value": item["image_url"]["url"]}
+                    )
             content_str = json.dumps(content_data)
         elif isinstance(content, str):
             content_str = content
@@ -325,16 +418,16 @@ def ai_chat_proxy(current_user):
         duplicate = AIMessage.query.filter(
             AIMessage.user_id == current_user.id,
             AIMessage.content == content_str,
-            AIMessage.timestamp >= int(time.time() * 1000) - duplicate_window
+            AIMessage.timestamp >= int(time.time() * 1000) - duplicate_window,
         ).first()
 
         # 保存消息到数据库（仅当无重复时）
         if not duplicate:
             user_msg = AIMessage(
                 user_id=current_user.id,
-                role='user',
+                role="user",
                 content=content_str,
-                timestamp=int(time.time() * 1000)
+                timestamp=int(time.time() * 1000),
             )
             db.session.add(user_msg)
             db.session.commit()
@@ -345,13 +438,15 @@ def ai_chat_proxy(current_user):
 
         # 检查用户最后一条消息是否与商品相关
         last_user_content = ""
-        for msg in payload['messages']:
-            if msg['role'] == 'user':
-                content = msg.get('content', '')
+        for msg in payload["messages"]:
+            if msg["role"] == "user":
+                content = msg.get("content", "")
                 if isinstance(content, list):
                     # 提取所有文本内容并拼接
-                    text_parts = [item['text'] for item in content if item['type'] == 'text']
-                    last_user_content = ''.join(text_parts)
+                    text_parts = [
+                        item["text"] for item in content if item["type"] == "text"
+                    ]
+                    last_user_content = "".join(text_parts)
                 elif isinstance(content, str):
                     last_user_content = content
                 else:
@@ -387,31 +482,26 @@ def ai_chat_proxy(current_user):
             system_prompt = build_hybrid_prompt(relevant_products)
 
         # 添加系统提示
-        validated_messages.append({
-            'role': 'system',
-            'content': system_prompt
-        })
+        validated_messages.append({"role": "system", "content": system_prompt})
 
         # 添加用户消息
-        for msg in payload['messages']:
+        for msg in payload["messages"]:
             # 确保 content 字段存在且为字符串
-            content = msg.get('content', '')
+            content = msg.get("content", "")
             if isinstance(content, list):
                 # 提取所有文本内容并拼接
-                text_parts = [item['text'] for item in content if item['type'] == 'text']
-                content = ''.join(text_parts)
+                text_parts = [
+                    item["text"] for item in content if item["type"] == "text"
+                ]
+                content = "".join(text_parts)
             elif not isinstance(content, str):
                 content = str(content)
 
-            validated_messages.append({
-                'role': msg['role'],
-                'content': content
-            })
+            validated_messages.append({"role": msg["role"], "content": content})
 
         # 调用火山方舟 API
         response = client.chat.completions.create(
-            model=model,
-            messages=validated_messages  # 使用验证后的消息
+            model=model, messages=validated_messages  # 使用验证后的消息
         )
 
         # 提取 AI 回复内容
@@ -419,20 +509,22 @@ def ai_chat_proxy(current_user):
 
         # 构建响应，包含AI回复和商品信息
         chat_response = {
-            "choices": [{
-                "message": {
-                    "role": "assistant",
-                    "content": ai_content
-                }
-            }],
+            "choices": [{"message": {"role": "assistant", "content": ai_content}}],
             # 添加商品信息到响应中（仅当用户询问商城商品时）
-            "products": [{
-                "id": product.id,
-                "name": product.name,
-                "price": product.price,
-                "image": product.image,
-                "description": product.description
-            } for product in relevant_products] if (is_asking_mall or is_asking_all) and relevant_products else []
+            "products": (
+                [
+                    {
+                        "id": product.id,
+                        "name": product.name,
+                        "price": product.price,
+                        "image": product.image,
+                        "description": product.description,
+                    }
+                    for product in relevant_products
+                ]
+                if (is_asking_mall or is_asking_all) and relevant_products
+                else []
+            ),
         }
 
         # 保存 AI 回复 - 添加去重检查
@@ -440,15 +532,15 @@ def ai_chat_proxy(current_user):
         ai_duplicate = AIMessage.query.filter(
             AIMessage.user_id == current_user.id,
             AIMessage.content == ai_content,
-            AIMessage.timestamp >= int(time.time() * 1000) - ai_duplicate_window
+            AIMessage.timestamp >= int(time.time() * 1000) - ai_duplicate_window,
         ).first()
 
         if not ai_duplicate:
             ai_msg = AIMessage(
                 user_id=current_user.id,
-                role='assistant',
+                role="assistant",
                 content=ai_content,
-                timestamp=int(time.time() * 1000)
+                timestamp=int(time.time() * 1000),
             )
             db.session.add(ai_msg)
             db.session.commit()
@@ -457,27 +549,29 @@ def ai_chat_proxy(current_user):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f'AI 代理错误: {str(e)}')
-        return jsonify({
-            'error': '内部服务器错误',
-            'message': str(e)
-        }), 500
+        current_app.logger.error(f"AI 代理错误: {str(e)}")
+        return jsonify({"error": "内部服务器错误", "message": str(e)}), 500
 
 
 # 添加一个路由用于手动重新加载商品关键词
-@ai_api.route('/reload-keywords', methods=['POST'])
+@ai_api.route("/reload-keywords", methods=["POST"])
 @token_required
 def reload_keywords(current_user):
     try:
         load_all_product_keywords()
-        return jsonify({
-            'status': 'success',
-            'message': f'成功加载 {len(all_product_keywords)} 个商品关键词',
-            'keywords_count': len(all_product_keywords)
-        }), 200
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "message": f"成功加载 {len(all_product_keywords)} 个商品关键词",
+                    "keywords_count": len(all_product_keywords),
+                }
+            ),
+            200,
+        )
     except Exception as e:
-        current_app.logger.error(f'重新加载关键词失败: {str(e)}')
-        return jsonify({
-            'status': 'error',
-            'message': f'重新加载关键词失败: {str(e)}'
-        }), 500
+        current_app.logger.error(f"重新加载关键词失败: {str(e)}")
+        return (
+            jsonify({"status": "error", "message": f"重新加载关键词失败: {str(e)}"}),
+            500,
+        )

@@ -8,7 +8,7 @@ def test_jwt_token_creation_and_verification(test_app):
     """测试JWT令牌创建和验证"""
     with test_app.app_context():
         # 创建测试用户
-        user = User(username='testjwt', password='testpass')
+        user = User(username="testjwt", password="testpass")
         db.session.add(user)
         db.session.commit()
 
@@ -17,11 +17,11 @@ def test_jwt_token_creation_and_verification(test_app):
 
         # 验证令牌
         decoded = decode_token(token)
-        assert decoded['sub'] == str(user.id)
+        assert decoded["sub"] == str(user.id)
 
         # 测试令牌加入黑名单
-        jti = decoded['jti']
-        expires_at = datetime.utcfromtimestamp(decoded['exp'])
+        jti = decoded["jti"]
+        expires_at = datetime.utcfromtimestamp(decoded["exp"])
 
         blacklisted_token = TokenBlacklist(jti=jti, expires_at=expires_at)
         db.session.add(blacklisted_token)
@@ -40,19 +40,18 @@ def test_token_blacklist_functionality(test_app, init_database):
         from flask_jwt_extended import create_access_token, decode_token
 
         # 创建测试用户
-        user = User(username='test_blacklist', password='test_pass')
+        user = User(username="test_blacklist", password="test_pass")
         db.session.add(user)
         db.session.commit()
 
         # 创建访问令牌
         token = create_access_token(identity=str(user.id))
         decoded = decode_token(token)
-        jti = decoded['jti']
+        jti = decoded["jti"]
 
         # 将令牌加入黑名单
         blacklisted_token = TokenBlacklist(
-            jti=jti,
-            expires_at=datetime.utcfromtimestamp(decoded['exp'])
+            jti=jti, expires_at=datetime.utcfromtimestamp(decoded["exp"])
         )
         db.session.add(blacklisted_token)
         db.session.commit()

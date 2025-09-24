@@ -16,7 +16,7 @@ app = create_app()
 migrate = Migrate(app, db)
 
 # 迁移目录路径
-migrations_dir = os.path.join(project_root, 'migrations')
+migrations_dir = os.path.join(project_root, "migrations")
 
 
 def fix_missing_columns():
@@ -24,30 +24,34 @@ def fix_missing_columns():
     try:
         inspector = inspect(db.engine)
         required_columns = {
-            'cart_items': ['updated_at'],
+            "cart_items": ["updated_at"],
         }
 
         for table, columns in required_columns.items():
             if table in inspector.get_table_names():
-                existing_columns = [col['name'] for col in inspector.get_columns(table)]
+                existing_columns = [col["name"] for col in inspector.get_columns(table)]
                 for col in columns:
                     if col not in existing_columns:
                         print(f"添加缺失字段 {col} 到表 {table}")
                         try:
-                            db.session.execute(text(
-                                f"ALTER TABLE {table} "
-                                f"ADD COLUMN {col} DATETIME DEFAULT CURRENT_TIMESTAMP "
-                                "ON UPDATE CURRENT_TIMESTAMP"
-                            ))
+                            db.session.execute(
+                                text(
+                                    f"ALTER TABLE {table} "
+                                    f"ADD COLUMN {col} DATETIME DEFAULT CURRENT_TIMESTAMP "
+                                    "ON UPDATE CURRENT_TIMESTAMP"
+                                )
+                            )
                             print(f"成功添加字段 {col}")
                         except Exception as alter_err:
                             print(f"添加字段失败: {str(alter_err)}")
                             # 尝试更简单的添加方式
                             try:
-                                db.session.execute(text(
-                                    f"ALTER TABLE {table} "
-                                    f"ADD COLUMN {col} DATETIME"
-                                ))
+                                db.session.execute(
+                                    text(
+                                        f"ALTER TABLE {table} "
+                                        f"ADD COLUMN {col} DATETIME"
+                                    )
+                                )
                                 print(f"成功添加字段 {col} (无默认值)")
                             except Exception as simple_err:
                                 print(f"简单添加字段失败: {str(simple_err)}")
@@ -60,7 +64,7 @@ def fix_missing_columns():
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     with app.app_context():
         print("重置迁移环境...")
 
@@ -75,18 +79,19 @@ if __name__ == '__main__':
 
         # 生成迁移脚本
         print("生成迁移脚本...")
-        _migrate(directory=migrations_dir, message='Initial migration')
+        _migrate(directory=migrations_dir, message="Initial migration")
         print("已生成迁移脚本")
 
         # 修复迁移脚本中的字段长度问题
-        version_dir = os.path.join(migrations_dir, 'versions')
+        version_dir = os.path.join(migrations_dir, "versions")
         for file in os.listdir(version_dir):
-            if file.endswith('.py') and 'initial_migration' in file:
+            if file.endswith(".py") and "initial_migration" in file:
                 file_path = os.path.join(version_dir, file)
-                with open(file_path, 'r+', encoding='utf-8') as f:
+                with open(file_path, "r+", encoding="utf-8") as f:
                     content = f.read()
-                    content = content.replace("type_=sa.String(length=6)",
-                                              "type_=sa.String(length=50)")
+                    content = content.replace(
+                        "type_=sa.String(length=6)", "type_=sa.String(length=50)"
+                    )
                     f.seek(0)
                     f.write(content)
                     f.truncate()

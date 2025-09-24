@@ -8,7 +8,7 @@ import socket
 from sqlalchemy import text
 
 # 添加项目根目录到系统路径
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
@@ -16,8 +16,7 @@ app = create_app()
 
 # 配置日志
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)
@@ -32,10 +31,10 @@ def cleanup_job():
 
 # 配置定时任务清理过期令牌
 scheduler = BackgroundScheduler()
-scheduler.add_job(cleanup_job, 'interval', hours=1)
+scheduler.add_job(cleanup_job, "interval", hours=1)
 scheduler.start()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # 确保数据库表存在
     with app.app_context():
         try:
@@ -86,9 +85,9 @@ if __name__ == '__main__':
 
     # 获取所有端点
     for rule in app.url_map.iter_rules():
-        if rule.endpoint not in ('static', 'swagger_ui'):
-            methods = ','.join(rule.methods)
-            print(f'{methods:<10} {rule}')
+        if rule.endpoint not in ("static", "swagger_ui"):
+            methods = ",".join(rule.methods)
+            print(f"{methods:<10} {rule}")
 
     print("\n" + "=" * 50)
     print("Starting MallBackend server...")
@@ -96,4 +95,4 @@ if __name__ == '__main__':
 
     # 启用详细日志
     app.logger.setLevel(logging.DEBUG)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

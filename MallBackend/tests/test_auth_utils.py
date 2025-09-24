@@ -24,10 +24,14 @@ class TestPasswordHashing:
         assert hashed_password != plain_password, "加密后的密码不应是明文"
 
         # 断言：错误的密码验证应返回 False
-        assert not check_password_hash(hashed_password, wrong_password), "错误密码验证应失败"
+        assert not check_password_hash(
+            hashed_password, wrong_password
+        ), "错误密码验证应失败"
 
         # 断言：正确的密码验证应返回 True
-        assert check_password_hash(hashed_password, plain_password), "正确密码验证应成功"
+        assert check_password_hash(
+            hashed_password, plain_password
+        ), "正确密码验证应成功"
 
     def test_different_salts_produce_different_hashes(self):
         """
@@ -43,5 +47,6 @@ class TestPasswordHashing:
         # 但两者都应该能验证通过
         assert check_password_hash(hash1, password)
         assert check_password_hash(hash2, password)
+
 
 # 运行这个测试的命令: python -m pytest tests/test_auth_utils.py -v
