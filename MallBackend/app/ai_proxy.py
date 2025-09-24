@@ -30,6 +30,7 @@ PRODUCT_CATEGORIES = {'手机', '华为', '小米', '苹果', '花朵', '卡片'
 # 商城特定关键词
 MALL_SPECIFIC_KEYWORDS = {'商城中', '商城里有', '你们有', '店铺里', '你们卖', '有没有', '能买到', '你们提供', '你们店',
                           '商城'}
+
 GENERAL_PRODUCT_KEYWORDS = {'网络上', '一般', '市面上', '常见', '推荐一款', '哪种好', '哪个品牌好', '大家推荐', '流行'}
 
 # 添加商品类别词汇到jieba
@@ -47,7 +48,6 @@ for word in GENERAL_PRODUCT_KEYWORDS:
 
 def load_all_product_keywords():
     """预加载所有商品的关键词"""
-    global product_keywords_map, all_product_keywords
     try:
         products = Product.query.all()
         current_app.logger.info(f"正在加载 {len(products)} 个商品的关键词...")
@@ -370,10 +370,10 @@ def ai_chat_proxy(current_user):
             # 提取关键词
             keywords = extract_product_keywords(last_user_content)
             current_app.logger.info(f"提取的关键词: {keywords}")
+
             # 搜索相关商品
             relevant_products = search_products_by_keywords(keywords)
-
-        current_app.logger.info(f"找到 {len(relevant_products)} 个相关商品")
+            current_app.logger.info(f"找到 {len(relevant_products)} 个相关商品")
 
         # 根据用户意图构建不同的系统提示
         if is_asking_mall or is_asking_all:
