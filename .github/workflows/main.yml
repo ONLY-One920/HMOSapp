@@ -103,7 +103,9 @@ jobs:
     # 使用pytest运行测试并生成覆盖率报告
     - name: Run tests with pytest
       run: |
-        pytest --cov=app --cov-report=xml --cov-report=html tests/  # 生成XML和HTML格式的覆盖率报告
+        echo "Checking test files..."
+        find tests/ -name "test_*.py" | wc -l
+        pytest -v --cov=app --cov-report=xml --cov-report=html tests/
     
     # 上传HTML覆盖率报告作为制品
     - name: Upload coverage reports
