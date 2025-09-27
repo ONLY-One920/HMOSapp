@@ -75,8 +75,8 @@ def test_xss_in_product_description(authenticated_client, test_client):
         response = test_client.get("/api/products/xss-test/detail")
         assert response.status_code == 200
 
-        # 这里可以根据你的XSS防护策略进行验证
-        # 例如，如果后端进行了HTML转义，应该包含转义后的字符
+        # 根据实际XSS防护策略进行验证
+        # 扩展：例如，如果后端进行了HTML转义，应该包含转义后的字符
         assert (
             "<script>" in response.json["description"]
             or "&lt;script&gt;" in response.json["description"]
@@ -136,8 +136,8 @@ def test_xss_in_product_description_display(test_client, authenticated_client):
         response = test_client.get("/api/products/xss-test-2/detail")
         assert response.status_code == 200
 
-        # 这里应该根据你的XSS防护策略进行验证
-        # 例如，如果后端进行了HTML转义，应该包含转义后的字符
+        # 根据实际XSS防护策略进行验证
+        # 扩展：例如，如果后端进行了HTML转义，应该包含转义后的字符
         assert (
             "<script>" in response.json["description"]
             or "&lt;script&gt;" in response.json["description"]
