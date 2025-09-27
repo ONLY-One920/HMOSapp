@@ -329,11 +329,12 @@ def update_cart_quantity(current_user):
 
     # 当数量 <= 0 时执行删除
     if quantity <= 0:
-        return remove_from_cart(current_user, item_id)
+        return remove_from_cart(current_user=current_user, item_id=item_id)
 
     # 使用更健壮的查询方式
     cart_item = CartItem.query.filter(
-        CartItem.id == item_id, CartItem.user_id == current_user.id
+        CartItem.id == item_id,
+        CartItem.user_id == current_user.id
     ).first()
 
     if not cart_item:
@@ -377,7 +378,9 @@ def update_cart_quantity(current_user):
     ]
 
     return (
-        jsonify({"status": "success", "message": "购物车已更新", "cart": cart_data}),
+        jsonify({"status": "success",
+                 "message": "购物车已更新",
+                 "cart": cart_data}),
         200,
     )
 
@@ -387,7 +390,8 @@ def update_cart_quantity(current_user):
 def remove_from_cart(current_user, item_id):
     # 使用更健壮的查询方式
     cart_item = CartItem.query.filter(
-        CartItem.id == item_id, CartItem.user_id == current_user.id
+        CartItem.id == item_id,
+        CartItem.user_id == current_user.id
     ).first()
 
     if not cart_item:
@@ -400,7 +404,9 @@ def remove_from_cart(current_user, item_id):
         db.session.rollback()
         current_app.logger.error(f"移除购物车项失败: {str(e)}")
         return (
-            jsonify({"status": "error", "error": "移除商品失败", "message": str(e)}),
+            jsonify({"status": "error",
+                     "error": "移除商品失败",
+                     "message": str(e)}),
             500,
         )
 

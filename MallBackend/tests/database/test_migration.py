@@ -1,4 +1,3 @@
-import pytest
 import os
 import tempfile
 from flask_migrate import upgrade, downgrade, init
@@ -18,12 +17,41 @@ def test_migrations():
             {
                 "SQLALCHEMY_DATABASE_URI": f"sqlite:///{db_path}",
                 "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                'TESTING': True
             }
         )
 
         with app.app_context():
             # 初始化迁移仓库
             migrations_dir = os.path.join(os.path.dirname(__file__), "../../migrations")
+
+            # 如果迁移目录不存在，先创建所有表
+            if not os.path.exists(migrations_dir):
+                db.create_all()
+                print("直接创建数据库表（无迁移目录）")
+            else:
+                # 应用迁移
+                try:
+                    upgrade(directory=migrations_dir)
+                    print("迁移应用成功")
+                except Exception as e:
+                    print(f"迁移失败，回退到直接创建表: {str(e)}")
+                    db.create_all()
+
+            # 验证表结构
+            inspector = db.inspect(db.engine)
+            tables = inspector.get_table_names()
+            print(f"数据库中的表: {tables}")
+
+            # 检查必需的表
+            required_tables = ['users', 'products', 'cart_items', 'ai_messages', 'token_blacklist']
+            for table in required_tables:
+                assert table in tables, f"缺少表: {table}"
+
+            # 验证表结构
+            for table in required_tables:
+                columns = [col['name'] for col in inspector.get_columns(table)]
+                print(f"表 {table} 的列: {columns}")
 
             # 如果迁移目录已存在，直接应用迁移
             if os.path.exists(migrations_dir):

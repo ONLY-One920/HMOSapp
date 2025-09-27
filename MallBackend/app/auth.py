@@ -7,6 +7,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
     get_jwt,
 )
+import functools
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from . import db
@@ -17,6 +18,7 @@ auth_api = Blueprint("auth_api", __name__)
 
 def token_required(fn):
     @jwt_required()
+    @functools.wraps(fn)  # 使用 wraps 保留函数元数据
     def decorated_function(*args, **kwargs):
         try:
             # 获取用户ID (兼容字符串和整数)
@@ -28,8 +30,7 @@ def token_required(fn):
                 except (TypeError, ValueError):
                     current_app.logger.error(f"无效的用户标识格式: {user_id}")
                     return (
-                        jsonify({"status": "error", "error": "无效的用户标识格式"}),
-                        401,
+                        jsonify({"status": "error", "error": "无效的用户标识格式"}),401,
                     )
 
             # 检查令牌是否在黑名单中
@@ -44,23 +45,18 @@ def token_required(fn):
                 current_app.logger.error(f"用户不存在: ID={user_id}")
                 return jsonify({"status": "error", "error": "无效的token"}), 401
 
-            return fn(current_user, *args, **kwargs)
+            return fn(current_user=current_user, *args, **kwargs)
         except Exception as e:
             current_app.logger.error(f"令牌验证失败: {str(e)}", exc_info=True)
             return (
-                jsonify(
-                    {
+                jsonify({
                         "status": "error",
                         "error": "令牌验证失败",
                         "message": str(e),
                         "jwt_identity": get_jwt_identity(),
                         "request_headers": dict(request.headers),
-                    }
-                ),
-                401,
+                    }),401,
             )
-
-    decorated_function.__name__ = fn.__name__
     return decorated_function
 
 

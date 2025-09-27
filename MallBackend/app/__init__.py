@@ -47,14 +47,16 @@ def create_app():
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # JWT配置
-    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "jwt_fallback_secret")
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 604800  # 设置7天有效期
-    app.config["JWT_HEADER_TYPE"] = "Bearer"
-    app.config["JWT_HEADER_NAME"] = "Authorization"  # 明确指定头部名称
-    app.config["JWT_TOKEN_LOCATION"] = ["headers"]  # 明确指定从头部获取token
-    app.config["JWT_ALGORITHM"] = "HS256"  # 明确指定算法
-    app.config["JWT_DECODE_ALGORITHMS"] = ["HS256"]  # 指定可接受的算法列表
+    # JWT配置 - 修复 proxies 参数问题
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt_fallback_secret')
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 604800  # 设置7天有效期
+    app.config['JWT_HEADER_TYPE'] = 'Bearer'
+    app.config['JWT_HEADER_NAME'] = 'Authorization'  # 明确指定头部名称
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']  # 明确指定从头部获取token
+    app.config['JWT_ALGORITHM'] = 'HS256'  # 明确指定算法
+    app.config['JWT_DECODE_ALGORITHMS'] = ['HS256']  # 指定可接受的算法列表
+    # 修复：避免传递不必要的参数
+    app.config['JWT_ADDITIONAL_HEADERS'] = {}  # 明确设置为空
 
     # 火山方舟API配置
     app.config["ARK_API_KEY"] = os.getenv("ARK_API_KEY")
