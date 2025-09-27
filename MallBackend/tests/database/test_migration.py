@@ -17,7 +17,7 @@ def test_migrations():
             {
                 "SQLALCHEMY_DATABASE_URI": f"sqlite:///{db_path}",
                 "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-                'TESTING': True
+                "TESTING": True,
             }
         )
 
@@ -44,13 +44,19 @@ def test_migrations():
             print(f"数据库中的表: {tables}")
 
             # 检查必需的表
-            required_tables = ['users', 'products', 'cart_items', 'ai_messages', 'token_blacklist']
+            required_tables = [
+                "users",
+                "products",
+                "cart_items",
+                "ai_messages",
+                "token_blacklist",
+            ]
             for table in required_tables:
                 assert table in tables, f"缺少表: {table}"
 
             # 验证表结构
             for table in required_tables:
-                columns = [col['name'] for col in inspector.get_columns(table)]
+                columns = [col["name"] for col in inspector.get_columns(table)]
                 print(f"表 {table} 的列: {columns}")
 
             # 如果迁移目录已存在，直接应用迁移

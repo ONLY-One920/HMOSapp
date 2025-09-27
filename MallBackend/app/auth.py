@@ -30,7 +30,8 @@ def token_required(fn):
                 except (TypeError, ValueError):
                     current_app.logger.error(f"无效的用户标识格式: {user_id}")
                     return (
-                        jsonify({"status": "error", "error": "无效的用户标识格式"}),401,
+                        jsonify({"status": "error", "error": "无效的用户标识格式"}),
+                        401,
                     )
 
             # 检查令牌是否在黑名单中
@@ -49,14 +50,18 @@ def token_required(fn):
         except Exception as e:
             current_app.logger.error(f"令牌验证失败: {str(e)}", exc_info=True)
             return (
-                jsonify({
+                jsonify(
+                    {
                         "status": "error",
                         "error": "令牌验证失败",
                         "message": str(e),
                         "jwt_identity": get_jwt_identity(),
                         "request_headers": dict(request.headers),
-                    }),401,
+                    }
+                ),
+                401,
             )
+
     return decorated_function
 
 
