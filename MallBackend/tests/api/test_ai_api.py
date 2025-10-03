@@ -24,24 +24,42 @@ def test_get_ai_messages_api(authenticated_client, init_database):
 
 def test_delete_ai_message_api(authenticated_client, init_database):
     """测试删除AI消息API"""
-    # 先创建一条测试消息
-    from app import db
-    from app.models import AIMessage, User
+    # 使用测试客户端直接创建消息
+    response = authenticated_client.post('/api/ai/messages', json={
+        'role': 'user',
+        'content': '测试删除消息',
+        'timestamp': 1234567890
+    })
 
-    with authenticated_client.application.app_context():
-        user = User.query.filter_by(username="123456").first()
-        message = AIMessage(
-            user_id=user.id, role="user", content="测试消息", timestamp=1234567890
-        )
-        db.session.add(message)
-        db.session.commit()
-        message_id = message.id
+    assert response.status_code == 201
+
+    # 获取所有消息找到刚创建的消息
+    messages_response = authenticated_client.get('/api/ai/messages')
+    assert messages_response.status_code == 200
+
+    messages = messages_response.json
+    assert len(messages) > 0
+
+    # 找到包含测试内容的消息
+    test_message = None
+    for msg in messages:
+        if msg['content'] == '测试删除消息':
+            test_message = msg
+            break
+
+    assert test_message is not None, "测试消息未找到"
 
     # 删除消息
-    response = authenticated_client.delete(f"/api/ai/messages/{message_id}")
+    message_id = test_message['id']
+    response = authenticated_client.delete(f'/api/ai/messages/{message_id}')
 
     assert response.status_code == 200
-    assert "消息已删除" in response.json["message"]
+    assert '消息已删除' in response.json['message']
+
+    # 验证消息已被删除
+    messages_after_delete = authenticated_client.get('/api/ai/messages').json
+    remaining_ids = [msg['id'] for msg in messages_after_delete]
+    assert message_id not in remaining_ids, "消息删除后仍然存在"
 
 
 def test_reload_keywords_api(authenticated_client):

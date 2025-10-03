@@ -377,6 +377,39 @@ def ai_chat_proxy(current_user):
     if not all_product_keywords:
         load_all_product_keywords()
 
+        # 获取请求数据
+    payload = request.json
+    if not payload or "messages" not in payload:
+        return jsonify({"error": "无效的请求数据"}), 400
+
+    model = payload.get("model", current_app.config["ARK_DEFAULT_MODEL"])
+
+    # 检查消息是否为空
+    messages = payload.get("messages", [])
+    if not messages:
+        return jsonify({"error": "消息不能为空"}), 400
+
+    # 检查最后一条用户消息是否为空
+    user_messages = [msg for msg in messages if msg.get("role") == "user"]
+    if not user_messages:
+        return jsonify({"error": "没有用户消息"}), 400
+
+    last_user_message = user_messages[-1]
+    content = last_user_message.get("content", "")
+
+    # 处理空内容的情况
+    if not content or (isinstance(content, str) and content.strip() == ""):
+        # 返回友好的提示而不是错误
+        return jsonify({
+            "choices": [{
+                "message": {
+                    "role": "assistant",
+                    "content": "您好！我注意到您发送了空消息。请问有什么可以帮助您的吗？"
+                }
+            }],
+            "products": []
+        }), 200
+
     # 使用应用上下文中的 db 对象
     db = current_app.extensions["sqlalchemy"]
 
