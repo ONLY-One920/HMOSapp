@@ -7,7 +7,6 @@ from .auth import token_required
 import jieba  # 用于中文分词
 from collections import Counter
 from typing import List, Set, Dict
-import re
 
 ai_api = Blueprint("ai_api", __name__)
 
