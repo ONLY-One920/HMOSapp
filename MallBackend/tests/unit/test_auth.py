@@ -10,7 +10,8 @@ def test_token_required_decorator(test_app, init_database):
     with test_app.app_context():
         # 获取测试用户
         from app.models import User
-        user = User.query.filter_by(username='123456').first()
+
+        user = User.query.filter_by(username="123456").first()
 
         # 创建有效的访问令牌
         access_token = create_access_token(identity=str(user.id))
@@ -18,10 +19,10 @@ def test_token_required_decorator(test_app, init_database):
         # 使用测试客户端发送带有有效token的请求到现有的受保护端点
         with test_app.test_client() as client:
             # 设置认证头
-            headers = {'Authorization': f'Bearer {access_token}'}
+            headers = {"Authorization": f"Bearer {access_token}"}
 
             # 测试现有的受保护端点，比如 /api/verify
-            response = client.get('/api/verify', headers=headers)
+            response = client.get("/api/verify", headers=headers)
 
             # 验证响应
             assert response.status_code == 200
@@ -37,10 +38,10 @@ def test_token_required_with_invalid_token(test_app):
         # 使用测试客户端发送带有无效token的请求
         with test_app.test_client() as client:
             # 设置无效的认证头
-            headers = {'Authorization': 'Bearer invalid_token'}
+            headers = {"Authorization": "Bearer invalid_token"}
 
             # 测试现有的受保护端点
-            response = client.get('/api/verify', headers=headers)
+            response = client.get("/api/verify", headers=headers)
 
             # 验证返回401错误
             assert response.status_code == 401
@@ -54,7 +55,7 @@ def test_token_required_without_token(test_app):
         # 使用测试客户端发送没有token的请求
         with test_app.test_client() as client:
             # 测试现有的受保护端点
-            response = client.get('/api/verify')
+            response = client.get("/api/verify")
 
             # 验证返回401错误
             assert response.status_code == 401
@@ -67,7 +68,8 @@ def test_token_required_with_blacklisted_token(test_app, init_database):
     with test_app.app_context():
         # 获取测试用户
         from app.models import User
-        user = User.query.filter_by(username='123456').first()
+
+        user = User.query.filter_by(username="123456").first()
 
         # 创建访问令牌
         access_token = create_access_token(identity=str(user.id))
@@ -75,14 +77,14 @@ def test_token_required_with_blacklisted_token(test_app, init_database):
         # 使用测试客户端
         with test_app.test_client() as client:
             # 设置认证头
-            headers = {'Authorization': f'Bearer {access_token}'}
+            headers = {"Authorization": f"Bearer {access_token}"}
 
             # 先登出使token失效（加入黑名单）
-            logout_response = client.post('/api/logout', headers=headers)
+            logout_response = client.post("/api/logout", headers=headers)
             assert logout_response.status_code == 200
 
             # 再次使用同一个token访问受保护端点
-            response = client.get('/api/verify', headers=headers)
+            response = client.get("/api/verify", headers=headers)
 
             # 验证返回401错误
             assert response.status_code == 401
@@ -99,10 +101,10 @@ def test_token_required_with_nonexistent_user(test_app):
         # 使用测试客户端发送请求
         with test_app.test_client() as client:
             # 设置认证头
-            headers = {'Authorization': f'Bearer {access_token}'}
+            headers = {"Authorization": f"Bearer {access_token}"}
 
             # 测试现有的受保护端点
-            response = client.get('/api/verify', headers=headers)
+            response = client.get("/api/verify", headers=headers)
 
             # 验证返回401错误
             assert response.status_code == 401
@@ -115,7 +117,8 @@ def test_token_required_integration(test_app, init_database):
     with test_app.app_context():
         # 获取测试用户
         from app.models import User
-        user = User.query.filter_by(username='123456').first()
+
+        user = User.query.filter_by(username="123456").first()
 
         # 创建有效的访问令牌
         access_token = create_access_token(identity=str(user.id))
@@ -123,22 +126,20 @@ def test_token_required_integration(test_app, init_database):
         # 使用测试客户端测试多个受保护端点
         with test_app.test_client() as client:
             # 设置认证头
-            headers = {'Authorization': f'Bearer {access_token}'}
+            headers = {"Authorization": f"Bearer {access_token}"}
 
             # 测试多个受保护端点
-            endpoints = [
-                '/api/verify',
-                '/api/cart',
-                '/api/ai/messages'
-            ]
+            endpoints = ["/api/verify", "/api/cart", "/api/ai/messages"]
 
             for endpoint in endpoints:
                 response = client.get(endpoint, headers=headers)
                 # 这些端点应该返回200或404（如果没有数据），但不应该是401
-                assert response.status_code != 401, f"Endpoint {endpoint} returned 401 with valid token"
+                assert (
+                    response.status_code != 401
+                ), f"Endpoint {endpoint} returned 401 with valid token"
 
                 # 如果是/api/verify，应该返回200
-                if endpoint == '/api/verify':
+                if endpoint == "/api/verify":
                     assert response.status_code == 200
                     data = response.get_json()
                     assert data["status"] == "success"
@@ -148,6 +149,7 @@ def test_token_required_decorator_logic():
     """直接测试token_required装饰器的内部逻辑"""
     # 创建一个模拟的Flask应用上下文
     from flask import Flask
+
     app = Flask(__name__)
 
     with app.app_context():
@@ -164,11 +166,13 @@ def test_token_required_decorator_logic():
         decorated_function = mock_function
 
         # 模拟各种场景
-        with patch("app.auth.get_jwt_identity") as mock_identity, \
-                patch("app.auth.get_jwt") as mock_jwt, \
-                patch("app.auth.TokenBlacklist") as mock_blacklist, \
-                patch("app.auth.User") as mock_user_model, \
-                patch("app.auth.current_app") as mock_app:
+        with patch("app.auth.get_jwt_identity") as mock_identity, patch(
+            "app.auth.get_jwt"
+        ) as mock_jwt, patch("app.auth.TokenBlacklist") as mock_blacklist, patch(
+            "app.auth.User"
+        ) as mock_user_model, patch(
+            "app.auth.current_app"
+        ) as mock_app:
             # 场景1: 正常情况
             mock_identity.return_value = "1"
             mock_jwt.return_value = {"jti": "test-jti"}
@@ -212,20 +216,20 @@ def test_token_required_with_different_user_ids(test_app, init_database):
         from app.models import User
 
         # 测试字符串用户ID
-        user = User.query.filter_by(username='123456').first()
+        user = User.query.filter_by(username="123456").first()
         access_token = create_access_token(identity=str(user.id))
 
         with test_app.test_client() as client:
-            headers = {'Authorization': f'Bearer {access_token}'}
-            response = client.get('/api/verify', headers=headers)
+            headers = {"Authorization": f"Bearer {access_token}"}
+            response = client.get("/api/verify", headers=headers)
             assert response.status_code == 200
 
         # 测试整数用户ID（如果支持的话）
         access_token_int = create_access_token(identity=user.id)
 
         with test_app.test_client() as client:
-            headers = {'Authorization': f'Bearer {access_token_int}'}
-            response = client.get('/api/verify', headers=headers)
+            headers = {"Authorization": f"Bearer {access_token_int}"}
+            response = client.get("/api/verify", headers=headers)
             # 这个可能会失败，取决于JWT配置，但我们要测试装饰器的错误处理
             if response.status_code != 200:
                 assert response.status_code == 401

@@ -10,24 +10,26 @@ def test_basic_database_operations():
 
     # 创建临时数据库配置
     db_config = {
-        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
-        "DB_PORT": os.getenv('DB_PORT', '3306'),
-        "DB_USER": os.getenv('DB_USER', 'root'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD', '123456'),
+        "DB_HOST": os.getenv("DB_HOST", "localhost"),
+        "DB_PORT": os.getenv("DB_PORT", "3306"),
+        "DB_USER": os.getenv("DB_USER", "root"),
+        "DB_PASSWORD": os.getenv("DB_PASSWORD", "123456"),
     }
 
     test_db_name = f"test_basic_{random.randint(1000, 9999)}"
 
     try:
         app = create_app()
-        app.config.update({
-            "SQLALCHEMY_DATABASE_URI": (
-                f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
-                f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
-            ),
-            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-            "TESTING": True,
-        })
+        app.config.update(
+            {
+                "SQLALCHEMY_DATABASE_URI": (
+                    f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
+                    f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
+                ),
+                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                "TESTING": True,
+            }
+        )
 
         with app.app_context():
             # 创建测试数据库
@@ -47,7 +49,13 @@ def test_basic_database_operations():
             inspector = inspect(db.engine)
             tables = inspector.get_table_names()
 
-            required_tables = ["users", "products", "cart_items", "ai_messages", "token_blacklist"]
+            required_tables = [
+                "users",
+                "products",
+                "cart_items",
+                "ai_messages",
+                "token_blacklist",
+            ]
             for table in required_tables:
                 assert table in tables, f"缺少表: {table}"
 
@@ -59,7 +67,14 @@ def test_basic_database_operations():
 
             # 验证 products 表结构
             product_columns = [col["name"] for col in inspector.get_columns("products")]
-            expected_product_columns = ["id", "name", "price", "image", "images", "description"]
+            expected_product_columns = [
+                "id",
+                "name",
+                "price",
+                "image",
+                "images",
+                "description",
+            ]
             for col in expected_product_columns:
                 assert col in product_columns, f"products 表缺少列: {col}"
 
@@ -84,24 +99,26 @@ def test_table_relationships():
     """测试表关系"""
 
     db_config = {
-        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
-        "DB_PORT": os.getenv('DB_PORT', '3306'),
-        "DB_USER": os.getenv('DB_USER', 'root'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD', '123456'),
+        "DB_HOST": os.getenv("DB_HOST", "localhost"),
+        "DB_PORT": os.getenv("DB_PORT", "3306"),
+        "DB_USER": os.getenv("DB_USER", "root"),
+        "DB_PASSWORD": os.getenv("DB_PASSWORD", "123456"),
     }
 
     test_db_name = f"test_relations_{random.randint(1000, 9999)}"
 
     try:
         app = create_app()
-        app.config.update({
-            "SQLALCHEMY_DATABASE_URI": (
-                f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
-                f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
-            ),
-            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-            "TESTING": True,
-        })
+        app.config.update(
+            {
+                "SQLALCHEMY_DATABASE_URI": (
+                    f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
+                    f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
+                ),
+                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                "TESTING": True,
+            }
+        )
 
         with app.app_context():
             # 创建测试数据库
@@ -121,12 +138,12 @@ def test_table_relationships():
             from app.models import User, Product, CartItem
 
             # 创建测试用户
-            user = User(username='testuser', password='testpass')
+            user = User(username="testuser", password="testpass")
             db.session.add(user)
             db.session.commit()
 
             # 创建测试商品
-            product = Product(id='test-product', name='Test Product', price=99.99)
+            product = Product(id="test-product", name="Test Product", price=99.99)
             db.session.add(product)
             db.session.commit()
 
@@ -161,24 +178,26 @@ def test_database_constraints():
     """测试数据库约束"""
 
     db_config = {
-        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
-        "DB_PORT": os.getenv('DB_PORT', '3306'),
-        "DB_USER": os.getenv('DB_USER', 'root'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD', '123456'),
+        "DB_HOST": os.getenv("DB_HOST", "localhost"),
+        "DB_PORT": os.getenv("DB_PORT", "3306"),
+        "DB_USER": os.getenv("DB_USER", "root"),
+        "DB_PASSWORD": os.getenv("DB_PASSWORD", "123456"),
     }
 
     test_db_name = f"test_constraints_{random.randint(1000, 9999)}"
 
     try:
         app = create_app()
-        app.config.update({
-            "SQLALCHEMY_DATABASE_URI": (
-                f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
-                f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
-            ),
-            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-            "TESTING": True,
-        })
+        app.config.update(
+            {
+                "SQLALCHEMY_DATABASE_URI": (
+                    f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
+                    f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
+                ),
+                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                "TESTING": True,
+            }
+        )
 
         with app.app_context():
             # 创建测试数据库
@@ -197,12 +216,12 @@ def test_database_constraints():
             from app.models import User
 
             # 测试唯一约束
-            user1 = User(username='uniqueuser', password='pass1')
+            user1 = User(username="uniqueuser", password="pass1")
             db.session.add(user1)
             db.session.commit()
 
             # 尝试创建相同用户名的用户
-            user2 = User(username='uniqueuser', password='pass2')
+            user2 = User(username="uniqueuser", password="pass2")
             db.session.add(user2)
 
             try:
@@ -234,24 +253,26 @@ def test_database_transactions():
     """测试数据库事务"""
 
     db_config = {
-        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
-        "DB_PORT": os.getenv('DB_PORT', '3306'),
-        "DB_USER": os.getenv('DB_USER', 'root'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD', '123456'),
+        "DB_HOST": os.getenv("DB_HOST", "localhost"),
+        "DB_PORT": os.getenv("DB_PORT", "3306"),
+        "DB_USER": os.getenv("DB_USER", "root"),
+        "DB_PASSWORD": os.getenv("DB_PASSWORD", "123456"),
     }
 
     test_db_name = f"test_transactions_{random.randint(1000, 9999)}"
 
     try:
         app = create_app()
-        app.config.update({
-            "SQLALCHEMY_DATABASE_URI": (
-                f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
-                f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
-            ),
-            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-            "TESTING": True,
-        })
+        app.config.update(
+            {
+                "SQLALCHEMY_DATABASE_URI": (
+                    f"mysql+pymysql://{db_config['DB_USER']}:{db_config['DB_PASSWORD']}"
+                    f"@{db_config['DB_HOST']}:{db_config['DB_PORT']}/{test_db_name}"
+                ),
+                "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+                "TESTING": True,
+            }
+        )
 
         with app.app_context():
             # 创建测试数据库
@@ -274,7 +295,7 @@ def test_database_transactions():
 
             try:
                 # 开始事务
-                user = User(username='transaction_test', password='test_pass')
+                user = User(username="transaction_test", password="test_pass")
                 db.session.add(user)
 
                 # 故意制造错误导致回滚
