@@ -329,7 +329,8 @@ def update_cart_quantity(current_user):
 
     # 当数量 <= 0 时执行删除
     if quantity <= 0:
-        return remove_from_cart(current_user=current_user, item_id=item_id)
+        # 直接调用删除逻辑，而不是重定向到另一个路由
+        return remove_cart_item_directly(current_user, item_id)
 
     # 使用更健壮的查询方式
     cart_item = CartItem.query.filter(
@@ -378,6 +379,49 @@ def update_cart_quantity(current_user):
 
     return (
         jsonify({"status": "success", "message": "购物车已更新", "cart": cart_data}),
+        200,
+    )
+
+
+def remove_cart_item_directly(current_user, item_id):
+    """直接删除购物车项的内部函数"""
+    # 使用更健壮的查询方式
+    cart_item = CartItem.query.filter(
+        CartItem.id == item_id, CartItem.user_id == current_user.id
+    ).first()
+
+    if not cart_item:
+        return jsonify({"status": "error", "error": "购物车项不存在"}), 404
+
+    try:
+        db.session.delete(cart_item)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"移除购物车项失败: {str(e)}")
+        return (
+            jsonify({"status": "error", "error": "移除商品失败", "message": str(e)}),
+            500,
+        )
+
+    # 返回剩余的购物车状态
+    items = CartItem.query.filter_by(user_id=current_user.id).all()
+    cart_data = [
+        {
+            "id": item.id,
+            "product": {
+                "id": item.product.id,
+                "name": item.product.name,
+                "price": item.product.price,
+                "image": item.product.image,
+            },
+            "quantity": item.quantity,
+        }
+        for item in items
+    ]
+
+    return (
+        jsonify({"status": "success", "message": "已从购物车移除", "cart": cart_data}),
         200,
     )
 
