@@ -400,6 +400,7 @@ def ai_chat_proxy(current_user):
     # 处理空内容的情况
     if not content or (isinstance(content, str) and content.strip() == ""):
         # 返回友好的提示而不是错误
+<<<<<<< HEAD
         return (
             jsonify(
                 {
@@ -416,6 +417,17 @@ def ai_chat_proxy(current_user):
             ),
             200,
         )
+=======
+        return jsonify({
+            "choices": [{
+                "message": {
+                    "role": "assistant",
+                    "content": "您好！我注意到您发送了空消息。请问有什么可以帮助您的吗？"
+                }
+            }],
+            "products": []
+        }), 200
+>>>>>>> 407e1bf385e8c191cda329ecf379a92fa292e5ea
 
     # 使用应用上下文中的 db 对象
     db = current_app.extensions["sqlalchemy"]
