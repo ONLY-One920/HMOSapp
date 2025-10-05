@@ -1,6 +1,6 @@
-pytest==7.4.0
+pytest==8.4.2
 pytest-cov==4.1.0
-requests==2.31.0
+requests==2.32.5
 freezegun==1.2.2
 Faker==19.6.2
 pytest-mock==3.11.1
