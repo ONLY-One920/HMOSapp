@@ -46,8 +46,8 @@ def token_required(fn):
                 current_app.logger.error(f"用户不存在: ID={user_id}")
                 return jsonify({"status": "error", "error": "无效的token"}), 401
 
-            kwargs['current_user'] = current_user
-            return fn( *args, **kwargs)
+            kwargs["current_user"] = current_user
+            return fn(*args, **kwargs)
 
         except Exception as e:
             current_app.logger.error(f"令牌验证失败: {str(e)}", exc_info=True)

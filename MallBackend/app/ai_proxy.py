@@ -6,7 +6,7 @@ from .models import AIMessage, Product
 from .auth import token_required
 import jieba  # 用于中文分词
 from collections import Counter
-from typing import  Set, Dict
+from typing import Set, Dict
 
 ai_api = Blueprint("ai_api", __name__)
 

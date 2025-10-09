@@ -27,7 +27,7 @@ def check_database_schema():
 
         required_columns = {
             "cart_items": ["updated_at"],
-            "products": ["images"],  #检查products表的images字段
+            "products": ["images"],  # 检查products表的images字段
         }
 
         fixed_count = 0

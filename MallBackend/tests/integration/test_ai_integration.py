@@ -1,6 +1,7 @@
 from app import db
 from app.models import AIMessage, User
 
+
 def test_ai_message_storage(test_app, init_database, mock_ai_response):
     """测试AI消息存储"""
     with test_app.app_context():

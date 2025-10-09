@@ -43,7 +43,10 @@ def test_expired_token_rejection(test_client, init_database):
     assert response.status_code == 401
     # 可以进一步验证错误消息
     error_data = response.json
-    assert "token" in error_data.get("error", "").lower() or "无效令牌" in error_data.get("error", "").lower()
+    assert (
+        "token" in error_data.get("error", "").lower()
+        or "无效令牌" in error_data.get("error", "").lower()
+    )
 
 
 def test_token_revocation(authenticated_client, init_database):

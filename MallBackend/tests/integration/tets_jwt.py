@@ -3,6 +3,7 @@ from app.models import User, TokenBlacklist
 from flask_jwt_extended import create_access_token, decode_token
 from datetime import datetime, timedelta
 
+
 def test_jwt_token_creation_and_verification(test_app):
     """测试JWT令牌创建和验证"""
     with test_app.app_context():
