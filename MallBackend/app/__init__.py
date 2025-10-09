@@ -49,13 +49,13 @@ def create_app():
 
     # JWT配置 - 修复 proxies 参数问题
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "jwt_fallback_secret")
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 604800  # 设置7天有效期
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 604800  # 设置有效期(s)
     app.config["JWT_HEADER_TYPE"] = "Bearer"
     app.config["JWT_HEADER_NAME"] = "Authorization"  # 明确指定头部名称
     app.config["JWT_TOKEN_LOCATION"] = ["headers"]  # 明确指定从头部获取token
     app.config["JWT_ALGORITHM"] = "HS256"  # 明确指定算法
     app.config["JWT_DECODE_ALGORITHMS"] = ["HS256"]  # 指定可接受的算法列表
-    # 修复：避免传递不必要的参数
+    # 避免传递不必要的参数
     app.config["JWT_ADDITIONAL_HEADERS"] = {}  # 明确设置为空
 
     # 火山方舟API配置
@@ -126,7 +126,6 @@ def create_app():
         # 获取当前请求的Authorization头
         auth_header = request.headers.get("Authorization", "未提供")
 
-        # 修正空格问题：将多个空格替换为单个空格
         if auth_header and "Bearer" in auth_header:
             corrected_header = "Bearer " + auth_header.split("Bearer")[-1].strip()
         else:
@@ -167,11 +166,11 @@ def create_app():
 
     # 添加JWT解码错误处理器
     @jwt.expired_token_loader
-    def expired_token_callback(jwt_header, jwt_payload):
+    def expired_token_callback():
         return jsonify({"error": "令牌已过期", "message": "请重新登录获取新令牌"}), 401
 
     @jwt.revoked_token_loader
-    def revoked_token_callback(jwt_header, jwt_payload):
+    def revoked_token_callback():
         return (
             jsonify({"error": "令牌已被撤销", "message": "此令牌已被加入黑名单"}),
             401,
@@ -189,7 +188,6 @@ def create_app():
         def log_headers():
             auth_header = request.headers.get("Authorization")
             if auth_header:
-                # 修正空格问题
                 if "Bearer" in auth_header:
                     corrected = "Bearer " + auth_header.split("Bearer")[-1].strip()
                 else:

@@ -123,7 +123,7 @@ def login():
 
 @auth_api.route("/api/logout", methods=["POST"])
 @token_required
-def logout(current_user):
+def logout():
     try:
         # 获取当前令牌的JTI (JWT ID)
         jti = get_jwt()["jti"]

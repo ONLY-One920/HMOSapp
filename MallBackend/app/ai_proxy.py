@@ -6,7 +6,7 @@ from .models import AIMessage, Product
 from .auth import token_required
 import jieba  # 用于中文分词
 from collections import Counter
-from typing import List, Set, Dict
+from typing import  Set, Dict
 
 ai_api = Blueprint("ai_api", __name__)
 
@@ -160,13 +160,13 @@ def load_all_product_keywords():
 
 def extract_product_keywords(message):
     """使用分词技术从用户消息中提取商品相关关键词"""
-    # 使用jieba分词
+
     words = jieba.cut(message)
 
     # 过滤出可能的产品相关词汇
     product_related_words = []
     for word in words:
-        # 长度至少为2，且不是停用词
+
         if len(word) >= 2 and word not in STOP_WORDS:
             # 检查是否是已知的商品关键词或类别
             if word in all_product_keywords or word in product_categories:
