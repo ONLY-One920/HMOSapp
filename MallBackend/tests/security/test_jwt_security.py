@@ -61,3 +61,6 @@ def test_token_revocation(authenticated_client, init_database):
 
     # 应该返回401，说明令牌已失效
     assert response.status_code == 401, "撤销后的令牌应该被拒绝"
+    # 验证错误消息
+    error_data = response.json
+    assert "error" in error_data

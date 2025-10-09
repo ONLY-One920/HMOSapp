@@ -170,7 +170,7 @@ def create_app():
         return jsonify({"error": "令牌已过期", "message": "请重新登录获取新令牌"}), 401
 
     @jwt.revoked_token_loader
-    def revoked_token_callback():
+    def revoked_token_callback(jwt_header, jwt_payload):
         return (
             jsonify({"error": "令牌已被撤销", "message": "此令牌已被加入黑名单"}),
             401,

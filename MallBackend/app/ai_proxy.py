@@ -371,7 +371,7 @@ def build_all_products_prompt(products):
 
 @ai_api.route("/chat", methods=["POST"])
 @token_required
-def ai_chat_proxy(current_user):
+def ai_chat_proxy(current_user=None):
     # 确保商品关键词已加载
     if not all_product_keywords:
         load_all_product_keywords()
@@ -594,7 +594,7 @@ def ai_chat_proxy(current_user):
 # 添加一个路由用于手动重新加载商品关键词
 @ai_api.route("/reload-keywords", methods=["POST"])
 @token_required
-def reload_keywords(current_user):
+def reload_keywords(current_user=None):
     try:
         load_all_product_keywords()
         return (

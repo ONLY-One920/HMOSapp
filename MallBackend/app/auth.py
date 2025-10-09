@@ -46,7 +46,9 @@ def token_required(fn):
                 current_app.logger.error(f"用户不存在: ID={user_id}")
                 return jsonify({"status": "error", "error": "无效的token"}), 401
 
-            return fn(current_user=current_user, *args, **kwargs)
+            kwargs['current_user'] = current_user
+            return fn( *args, **kwargs)
+
         except Exception as e:
             current_app.logger.error(f"令牌验证失败: {str(e)}", exc_info=True)
             return (
@@ -123,7 +125,7 @@ def login():
 
 @auth_api.route("/api/logout", methods=["POST"])
 @token_required
-def logout():
+def logout(current_user=None):  # 添加 current_user 参数
     try:
         # 获取当前令牌的JTI (JWT ID)
         jti = get_jwt()["jti"]
@@ -133,7 +135,6 @@ def logout():
 
         # 将令牌加入黑名单
         blacklisted_token = TokenBlacklist(jti=jti, expires_at=expires_at)
-
         db.session.add(blacklisted_token)
         db.session.commit()
 
@@ -147,7 +148,7 @@ def logout():
 # 新增：验证token接口
 @auth_api.route("/api/verify", methods=["GET"])
 @token_required
-def verify_token(current_user):
+def verify_token(current_user=None):
     """验证token有效性并返回用户信息"""
     return (
         jsonify(
@@ -163,7 +164,7 @@ def verify_token(current_user):
 
 @auth_api.route("/api/change_password", methods=["POST"])
 @token_required
-def change_password(current_user):
+def change_password(current_user=None):
     """修改用户密码"""
     data = request.json
     old_password = data.get("old_password")
@@ -201,7 +202,7 @@ def change_password(current_user):
 
 @auth_api.route("/api/account", methods=["DELETE"])
 @token_required
-def delete_account(current_user):
+def delete_account(current_user=None):
     """删除用户账户"""
     data = request.json
     password = data.get("password")

@@ -99,7 +99,7 @@ def get_products():
 
 @main_api.route("/api/products", methods=["POST"])
 @token_required
-def create_product():
+def create_product(current_user=None):
     data = request.json
     required_fields = ["id", "name", "price"]
     if not all(field in data for field in required_fields):
@@ -129,7 +129,7 @@ def create_product():
 
 @main_api.route("/api/products/<product_id>", methods=["PUT"])
 @token_required
-def update_product( product_id):
+def update_product( product_id,current_user=None):
     product = Product.query.get(product_id)
     if not product:
         return jsonify({"status": "error", "error": "商品不存在"}), 404
@@ -152,7 +152,7 @@ def update_product( product_id):
 
 @main_api.route("/api/products/<product_id>", methods=["DELETE"])
 @token_required
-def delete_product( product_id):
+def delete_product( product_id,current_user=None):
     product = Product.query.get(product_id)
     if not product:
         return jsonify({"status": "error", "error": "商品不存在"}), 404
